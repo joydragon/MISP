@@ -301,6 +301,30 @@ class WorkflowsController extends AppController
         $this->set('menuData', ['menuList' => 'workflows', 'menuItem' => 'index_trigger']);
     }
 
+    public function customModuleManager(){
+        $modules = $this->Workflow->getModulesByType();
+        $errorWhileLoading = $this->Workflow->getModuleLoadingError();
+        $this->Module = ClassRegistry::init('Module');
+        $mispModules = $this->Module->getModules('Action');
+        $this->set('module_service_error', !is_array($mispModules));
+        $filters = $this->IndexFilter->harvestParameters(['type', 'actiontype', 'enabled']);
+        $moduleType = $filters['type'] ?? 'action';
+        $actionType = $filters['actiontype'] ?? 'all';
+        $enabledState = $filters['enabled'] ?? false;
+        $data = array_merge(
+            $modules["modules_action"],
+            $modules["modules_logic"]
+        );
+        $data = array_filter($data, function ($module) {
+            return !empty($module['is_custom']);
+        });
+        $this->set('data', $data);
+        $this->set('indexType', $moduleType);
+        $this->set('actionType', $actionType);
+        $this->set('errorWhileLoading', $errorWhileLoading);
+        $this->set('menuData', ['menuList' => 'workflows', 'menuItem' => 'index_custom_module_manager']);
+    }
+
     public function moduleIndex()
     {
         $modules = $this->Workflow->getModulesByType();

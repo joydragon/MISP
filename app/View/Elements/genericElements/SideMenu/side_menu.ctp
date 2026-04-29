@@ -1941,6 +1941,11 @@ $divider = '<li class="divider"></li>';
                     'url' => $baseurl . '/workflowBlueprints/index',
                     'text' => __('List Workflow Blueprints')
                 ));
+                echo $this->element('/genericElements/SideMenu/side_menu_link', array(
+                    'element_id' => 'index_custom_module_manager',
+                    'url' => '/workflows/customModuleManager',
+                    'text' => __('Custom Modules')
+                ));
                 if ($menuItem === 'view' || $menuItem === 'edit') {
                     echo $divider;
                     echo $this->element('/genericElements/SideMenu/side_menu_link', array(

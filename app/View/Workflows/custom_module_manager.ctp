@@ -34,39 +34,6 @@
             'data_path' => 'module_type',
         ],
         [
-            'name' => __('Blocking'),
-            'sort' => 'blocking',
-            'class' => 'short',
-            'data_path' => 'blocking',
-            'element' => 'boolean',
-            'colors' => true,
-        ],
-        [
-            'name' => __('MISP Core format'),
-            'sort' => 'expect_misp_core_format',
-            'class' => 'short',
-            'data_path' => 'expect_misp_core_format',
-            'element' => 'boolean',
-            'colors' => true,
-            'title' => __('Does this module expect data compliant with the MISP core format'),
-        ],
-        [
-            'name' => __('misp-module'),
-            'sort' => 'is_misp_module',
-            'data_path' => 'is_misp_module',
-            'element' => 'boolean',
-            'colors' => true,
-            'class' => 'short',
-        ],
-        [
-            'name' => __('Custom'),
-            'sort' => 'is_custom',
-            'data_path' => 'is_custom',
-            'element' => 'boolean',
-            'colors' => true,
-            'class' => 'short',
-        ],
-        [
             'name' => __('Enabled'),
             'sort' => 'disabled',
             'class' => 'short',
@@ -95,6 +62,43 @@
         'scaffold_data' => [
             'data' => [
                 'data' => $data,
+		'top_bar' => [
+                    'children' => [
+                        [
+                            'type' => 'simple',
+                            'children' => [
+                                [
+				    'class' => 'hidden mass-select',
+                                    'text' => __('Enable selected'),
+                                    'onClick' => 'multiSelectToggleField',
+                                    'onClickParams' => ['workflows', 'massToggleField', 'enabled', '1', '#WorkflowModuleIds'],
+                                ],
+                                [
+				    'class' => 'hidden mass-select',
+                                    'text' => __('Disable selected'),
+                                    'onClick' => 'multiSelectToggleField',
+                                    'onClickParams' => ['workflows', 'massToggleField', 'enabled', '0', '#WorkflowModuleIds'],
+                                ],
+				[
+				    'class' => 'hidden mass-select',
+                                    'text' => __('Delete selected'),
+                                    'onClick' => 'multiSelectToggleField',
+                                    'onClickParams' => ['workflows', 'massToggleField', 'delete', '1', '#WorkflowModuleIds'],
+                                ],
+                            ],
+                        ],
+                        [
+                            'type' => 'simple',
+                            'children' => [
+                                [
+                                    'url' => $baseurl . '/workflows/moduleIndex/type:all',
+                                    'text' => __('Upload New'),
+                                    'active' => $indexType === 'all',
+                                ]
+			    ]
+			]
+		    ]
+		],
                 'fields' => $fields,
                 'icon' => 'flag',
                 'title' => __('Custom Workflow Modules Manager'),
@@ -148,3 +152,16 @@
             ]
         ]
     ]);
+    echo $this->Form->create('Server', array('type' => 'file', 'url' => $baseurl . '/servers/uploadFile/modules_action'));?>
+        <fieldset>
+            <?php
+            echo $this->Form->file('file', array(
+                'error' => array('escape' => false),
+            ));
+            ?>
+        </fieldset>
+    <?php
+    echo $this->Form->button(__('Upload'), array('class' => 'btn btn-primary'));
+    echo $this->Form->end();
+
+

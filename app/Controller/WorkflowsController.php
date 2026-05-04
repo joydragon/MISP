@@ -325,6 +325,34 @@ class WorkflowsController extends AppController
         $this->set('menuData', ['menuList' => 'workflows', 'menuItem' => 'index_custom_module_manager']);
     }
 
+    public function massDeleteField($fieldName, $is_trigger=false)
+    {
+        if (!in_array($fieldName, $this->toggleableFields)) {
+            throw new MethodNotAllowedException(__('The field `%s` cannot be toggled', $fieldName));
+        }
+        if ($this->request->is('post') || $this->request->is('put')) {
+            $module_ids = JsonTool::decode($this->request->data['Workflow']['module_ids']);
+            $enabled_count = $this->Workflow->toggleModules($module_ids, $enabled, $is_trigger);
+            if (!empty($enabled_count)) {
+                return $this->__getSuccessResponseBasedOnContext(
+                    __('%s %s modules', ($enabled ? 'Enabled' : 'Disabled'), $enabled_count),
+                    null,
+                    'toggle_module',
+                    $module_ids,
+                    ['action' => (!empty($is_trigger) ? 'triggers' : 'moduleIndex')]
+                );
+            } else {
+                return $this->__getFailResponseBasedOnContext(
+                    __('Could not %s modules', ($enabled ? 'enable' : 'disable')),
+                    null,
+                    'toggle_module',
+                    $module_ids,
+                    ['action' => (!empty($is_trigger) ? 'triggers' : 'moduleIndex')]
+                );
+            }
+        }
+    }
+
     public function moduleIndex()
     {
         $modules = $this->Workflow->getModulesByType();

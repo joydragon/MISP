@@ -2673,6 +2673,26 @@ class Server extends AppModel
                 'regex_error' => __('Filename must be in the following format: *.png or *.svg'),
                 'files' => array(),
             ],
+	    'modules_action' => [
+                'name' => __('Custom Workflow Action Modules'),
+                'description' => __('PHP files that are going to be part of the custom Workflow modules that are going to be part of the "Action" section.'),
+                'expected' => [],
+                'valid_format' => __('PHP files'),
+                'path' => APP . 'Lib' . DS . 'WorkflowModules' . DS . 'action',
+                'regex' => '.*\.(php)$',
+                'regex_error' => __('Filename must be in the following format: Module*module.php'),
+                'files' => [],
+	    ],
+	    'modules_logic' => [
+                'name' => __('Custom Workflow Logic Modules'),
+                'description' => __('PHP files that are going to be part of the custom Workflow modules that are going to be part of the "Logic" section.'),
+                'expected' => [],
+                'valid_format' => __('PHP files'),
+                'path' => APP . 'Lib' . DS . 'WorkflowModules' . DS . 'logic',
+                'regex' => '.*\.(php)$',
+                'regex_error' => __('Filename must be in the following format: Module*module.php'),
+                'files' => [],
+	    ]
         ];
     }
 

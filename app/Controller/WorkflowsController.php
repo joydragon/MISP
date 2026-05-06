@@ -304,12 +304,7 @@ class WorkflowsController extends AppController
     public function customModuleManager(){
         $modules = $this->Workflow->getModulesByType();
         $errorWhileLoading = $this->Workflow->getModuleLoadingError();
-        $this->Module = ClassRegistry::init('Module');
-        $mispModules = $this->Module->getModules('Action');
-        $this->set('module_service_error', !is_array($mispModules));
         $filters = $this->IndexFilter->harvestParameters(['type', 'actiontype', 'enabled']);
-        $moduleType = $filters['type'] ?? 'action';
-        $actionType = $filters['actiontype'] ?? 'all';
         $enabledState = $filters['enabled'] ?? false;
         $data = array_merge(
             $modules["modules_action"],
@@ -319,8 +314,6 @@ class WorkflowsController extends AppController
             return !empty($module['is_custom']);
         });
         $this->set('data', $data);
-        $this->set('indexType', $moduleType);
-        $this->set('actionType', $actionType);
         $this->set('errorWhileLoading', $errorWhileLoading);
         $this->set('menuData', ['menuList' => 'workflows', 'menuItem' => 'index_custom_module_manager']);
     }
@@ -332,7 +325,12 @@ class WorkflowsController extends AppController
         }
         if ($this->request->is('post') || $this->request->is('put')) {
             $module_ids = JsonTool::decode($this->request->data['Workflow']['module_ids']);
-            $enabled_count = $this->Workflow->toggleModules($module_ids, $enabled, $is_trigger);
+	    foreach($module_ids as $id){
+		    $res = $this->delete($id);
+		    print_r($res);
+	    }
+            // $enabled_count = $this->Workflow->toggleModules($module_ids, $enabled, $is_trigger);
+	    /*
             if (!empty($enabled_count)) {
                 return $this->__getSuccessResponseBasedOnContext(
                     __('%s %s modules', ($enabled ? 'Enabled' : 'Disabled'), $enabled_count),
@@ -349,7 +347,8 @@ class WorkflowsController extends AppController
                     $module_ids,
                     ['action' => (!empty($is_trigger) ? 'triggers' : 'moduleIndex')]
                 );
-            }
+	    }
+	     */
         }
     }
 

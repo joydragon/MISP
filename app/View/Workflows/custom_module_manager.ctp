@@ -91,7 +91,7 @@
                             'type' => 'simple',
                             'children' => [
                                 [
-                                    'url' => $baseurl . '/workflows/moduleIndex/type:all',
+                                    'url' => $baseurl . '/servers/serverSettings/files#title_modules_action',
                                     'text' => __('Upload New'),
                                     'active' => $indexType === 'all',
                                 ]
@@ -148,10 +148,29 @@
                         'icon' => 'eye',
                         'dbclickAction' => true,
                     ],
+                    [
+                        'title' => __('Delete'),
+                        'icon' => 'trash',
+                        'postLink' => true,
+                        'url' => $baseurl . '/workflows/delete',
+                        'url_params_data_paths' => ['id'],
+                        'postLinkConfirm' => __('Are you sure you want to delete this module?'),
+                        'complex_requirement' => array(
+                            'function' => function ($row, $options) use ($isSiteAdmin) {
+                                return $isSiteAdmin && $options['datapath']['disabled'];
+                            },
+                            'options' => array(
+                                'datapath' => array(
+                                    'disabled' => 'disabled'
+                                )
+                            )
+                        ),
+                    ],
                 ]
             ]
         ]
     ]);
+    /*
     echo $this->Form->create('Server', array('type' => 'file', 'url' => $baseurl . '/servers/uploadFile/modules_action'));?>
         <fieldset>
             <?php
@@ -163,5 +182,4 @@
     <?php
     echo $this->Form->button(__('Upload'), array('class' => 'btn btn-primary'));
     echo $this->Form->end();
-
-
+     */

@@ -10,7 +10,7 @@ $humanReadableFilesize = function ($bytes, $dec = 2) {
     <?php
         foreach ($files as $k => $file):
     ?>
-        <h3><?php echo h($file['name']); ?></h3>
+	<h3 id="title_<?php echo $k;?>"><?php echo h($file['name']); ?></h3>
         <div>
             <b><?php echo __('Description');?></b>: <?php echo $file['description']; ?><br>
             <b><?php echo __('Expected Format');?></b>: <?php echo h($file['valid_format']);?><br>

@@ -114,8 +114,8 @@ $debugEnabled = !empty($selectedWorkflow['Workflow']['debug_enabled']);
                             <button type="button" class="btn btn-primary" data-type="misp-module" onclick="filterModules(this)">
                                 misp-module<span class="is-misp-module"></span>
                             </button>
-                            <button type="button" class="btn btn-primary" data-type="is-blocking" onclick="filterModules(this)">
-                                <?= __('Blocking') ?>
+                            <button type="button" class="btn btn-primary" data-type="is-custom" onclick="filterModules(this)">
+                                <?= __('Custom') ?>
                             </button>
                             <button type="button" class="btn btn-primary" data-type="all" onclick="filterModules(this)"><?= __('All') ?></button>
                         </div>

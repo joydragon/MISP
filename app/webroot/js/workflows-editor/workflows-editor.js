@@ -912,6 +912,10 @@ function filterModules(clicked) {
         $modulesToShow.filter(function () {
             return !$(this).data('module')['blocking'] || $(this).data('module')['disabled']
         }).hide()
+    } else if (selectedFilter == 'is-custom') {
+        $modulesToShow.filter(function () {
+            return !$(this).data('module')['is_custom'] || $(this).data('module')['disabled']
+        }).hide()
     }
 }
 

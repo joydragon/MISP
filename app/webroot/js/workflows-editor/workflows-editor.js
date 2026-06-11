@@ -1591,13 +1591,16 @@ function genNodeParamHtml(node, forNode = true) {
         paramHtml = ''
         switch (param.type) {
             case 'input':
-                paramHtml = genInput(param, false, forNode)[0].outerHTML
+                paramHtml = genInput(param, "", forNode)[0].outerHTML
+                break;
+            case 'password':
+                paramHtml = genInput(param, "password", forNode)[0].outerHTML
                 break;
             case 'hashpath':
                 paramHtml = genHashpathInput(param, false, forNode)[0].outerHTML
                 break;
             case 'textarea':
-                paramHtml = genInput(param, true, forNode)[0].outerHTML
+                paramHtml = genInput(param, "textarea", forNode)[0].outerHTML
                 break;
             case 'select':
                 paramHtml = genSelect(param, forNode)[0].outerHTML
@@ -1989,7 +1992,8 @@ function genPicker(options, forNode = true) {
     return $container
 }
 
-function genInput(options, isTextArea, forNode = true) {
+// changed isTextArea for textInputType
+function genInput(options, textInputType = "text", forNode = true) {
     var $container = $('<div>')
         .addClass('node-param-container')
         .attr('param-id', options.id)
@@ -2007,12 +2011,14 @@ function genInput(options, isTextArea, forNode = true) {
             genParameterWarning(options)
         )
     var $input
-    if (isTextArea) {
+    if (textInputType == "textarea") {
         if (forNode) {
             $input = $('<textarea>').attr('rows', 3).prop('disabled', true).css({ resize: 'none' }).attr('title', 'Can only be edited in node settings')
         } else {
             $input = $('<textarea>').attr('rows', 4).css({resize: 'none'}).addClass('start-codemirror')
         }
+    } else if (textInputType == "password"){
+        $input = $('<input>').attr('type', 'password').css({height: '30px'})
     } else {
         $input = $('<input>').attr('type', 'text').css({height: '30px'})
     }
@@ -2026,7 +2032,7 @@ function genInput(options, isTextArea, forNode = true) {
     $input
         .attr('oninput', 'handleInputChange(this)')
         .attr('data-paramid', options.param_id)
-    if (isTextArea) {
+    if (textInputType == "textarea") {
         $input.text(options.value !== undefined ? options.value : options.default)
     } else {
         $input.attr('value', options.value !== undefined ? options.value : options.default)

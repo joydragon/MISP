@@ -2257,6 +2257,14 @@ class Server extends AppModel
         return true;
     }
 
+    public function testSecFetchSiteHeader($value)
+    {
+        if (!empty($value)) {
+            return true;
+        }
+        return 'Sec-Fetch-Site header disabled. This can potentially open up the instance to CSRF attacks via automation endpoints. Enabling this is recommended but can actively prevent the operation of instances hosted under multiple addresses.';
+    }
+
     public function sightingsBeforeHook($setting, $value)
     {
         if ($value == true) {
@@ -4893,13 +4901,17 @@ class Server extends AppModel
         $redis->del('misp:server_cache:' . $serverId);
         while (true) {
             if ($fastCaching) {
-                if (!isset($lastId)) {
-                    $lastId = 0;
+                try {
+                    $return = $serverSync->getFastCache($nextLastId);
+                } catch (Exception $e) {
+                    $this->logException("Could not fetch fast cache from server {$serverSync->serverId()}.", $e);
+                    break;
                 }
-                $return = $serverSync->getFastCache($nextLastId);
-                $nextLastId = (int)$return->headers['x-misp-last-id'] ?? null;
+                // Case-insensitive lookup: CakePHP preserves header field casing as received,
+                // and the server sends 'X-MISP-Last-ID'. Direct array access with a lowercase
+                // key silently returns null → (int) 0 → cursor never advances → infinite loop.
+                $nextLastId = (int)$return->getHeader('X-MISP-Last-ID');
                 $data = $return->body();
-                $nextLastId;
             } else {
                 $i++;
                 $rules = [
@@ -7167,9 +7179,8 @@ class Server extends AppModel
                     'level' => 0,
                     'description' => __('If enabled, any POST, PUT or AJAX request will only be allowed when Sec-Fetch-Site header is not defined or contains "same-origin".'),
                     'value' => false,
-                    'test' => 'testBool',
-                    'type' => 'boolean',
-                    'null' => true,
+                    'test' => 'testSecFetchSiteHeader',
+                    'type' => 'boolean'
                 ],
                 'force_https' => [
                     'level' => self::SETTING_OPTIONAL,
@@ -7515,7 +7526,7 @@ class Server extends AppModel
                     'value' => '',
                     'test' => 'testForCookieTimeout',
                     'type' => 'numeric'
-                )
+                ),
             ),
             'Plugin' => array(
                 'branch' => 1,

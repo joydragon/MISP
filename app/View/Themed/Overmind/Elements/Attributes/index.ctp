@@ -1,4 +1,18 @@
 <?php
+// Title of the index displayed in the header section, leaving it empty will fallback to controller name
+$headerTitle = __('');
+
+// Description displayed under the title in the header section, leave empty if not needed
+$headerDescription = __('');
+
+// Actions displayed as buttons in the header section, leave empty if not needed
+$headerActions = [];
+
+$this->set('headerTitle', $headerTitle);
+$this->set('headerDescription', $headerDescription);
+$this->set('headerActions', $headerActions);
+
+
 // Temporary fix to avoid errors as these variables are defined in AttributesController
 $categoryOptions = isset($categoryOptions) ? $categoryOptions : null;
 $typeOptions = isset($typeOptions) ? $typeOptions : null;
@@ -36,49 +50,20 @@ $galaxyOptions = isset($galaxyOptions) ? $galaxyOptions : null;
  * - state_path     : Path to the boolean value (toggle)
  */
 
-
-$model = (isset($attributes[0]) && isset($attributes[0]['Attribute'])) ? 'Attribute' : null;
+$firstRow = !empty($attributes) ? reset($attributes) : [];
+$model    = !empty($firstRow['Attribute']) ? 'Attribute' : null;
 
 $path = function($field) use ($model) {
-    if (empty($model)) {
-        return $field;
-    }
-    if (empty($field)) {
-        return $model;
-    }
+    if (empty($model)) return $field;
+    if (empty($field)) return $model;
     return $model . '.' . $field;
 };
 
 $fields = [
     [
-        'element' => 'selector',
+        'element' => 'checkbox',
         'data_path' => 'Attribute.id',
         'card_section' => 'selector',
-        'actions' => [
-            [
-                'type' => 'link',
-                'label' => __('Edit'),
-                'icon' => 'pen-to-square',
-                'url' => $baseurl . '/attributes/edit/%id%',
-                'requirement' => 'check_edit_rights'
-            ],
-            [
-                'type' => 'ajax',
-                'label' => __('Soft Delete'),
-                'icon' => 'trash',
-                'url' => $baseurl . '/attributes/delete/%id%',
-                'class' => 'text-warning',
-                'requirement' => 'check_edit_rights'
-            ],
-            [
-                'type' => 'ajax',
-                'label' => __('Delete'),
-                'icon' => 'trash',
-                'url' => $baseurl . '/attributes/delete/%id%/true',
-                'class' => 'text-danger',
-                'requirement' => 'check_edit_rights'
-            ]
-        ]
     ]
 ];
 
@@ -88,7 +73,7 @@ if (!empty($show_event_id)) {
         'sort' => $path('event_id'),
         'data_path' => 'Event.id',
         'element' => 'id',
-        'url' => $baseurl . '/events/view/%id%',
+        'url' => $baseurl . '/events/view2/%id%',
         'card_section' => 'top',
         'display_in' => ['table', 'card']
     ];
@@ -105,7 +90,7 @@ $fields = array_merge($fields, [
     [
         'name' => __('Value'),
         'data_path' => $path(''),
-        'element' => 'value',
+        'element' => 'attribute_value',
         'card_section' => 'title',
         'display_in' => ['table', 'card']
     ],
@@ -163,29 +148,77 @@ $fields = array_merge($fields, [
         'card_section' => 'galaxy',
         'display_in' => ['table', 'card']
     ],
-
     [
-        'name' => __('Sightings'),
-        'data_path' => $path(''),
-        'element' => 'sightings',
-        'card_section' => 'extra',
-        'display_in' => ['card']
+        'name' => __('IDS'),
+        'data_path' => $path('to_ids'),
+        'element' => 'ids',
+        'card_section' => 'top',
+        'display_in' => ['table', 'card']
     ],
-    // [
-    //     'name' => __('Created'),
-    //     'data_path' => $path('date'),
-    //     'element' => 'timestamp',
-    //     'mode' => 'created',
-    //     'card_section' => 'meta',
-    //     'display_in' => ['card']
-    // ],
+    [
+        'name' => __('Correlate'),
+        'data_path' => $path('disable_correlation'),
+        'element' => 'correlate',
+        'card_section' => 'top',
+        'display_in' => ['table', 'card']
+    ],
+    [
+        'name' => __('Related Events'),
+        'element' => 'relatedEvents',
+        'card_section' => 'top',
+        'display_in' => ['table', 'card']
+    ],
+    [
+        'name' => __('Feed hits'),
+        'element' => 'feedHits',
+        'card_section' => 'meta',
+        'display_in' => ['table', 'card']
+    ],
     [
         'name' => __('Last Modified'),
         'data_path' => $path('timestamp'),
         'element' => 'timestamp',
         'mode' => 'modified',
-        'card_section' => 'top',
+        'card_section' => 'meta',
         'display_in' => ['card']
+    ],
+    [
+        'name' => __('Sightings'),
+        'element' => 'sightings',
+        'sightings' => isset($sightingsData) ? $sightingsData : ['data' => [], 'csv' => []],
+        'card_section' => 'meta',
+        'display_in' => ['table', 'card']
+    ],
+    [
+        'name' => __('Actions'),
+        'element' => 'row_actions',
+        'data_path' => 'Attribute.id',
+        'card_section' => 'extra',
+        'actions' => [
+            [
+                'type' => 'navigate',
+                'label' => __('Edit'),
+                'icon' => 'pen-to-square',
+                'url' => $baseurl . '/attributes/edit/%id%',
+                'requirement' => 'check_edit_rights'
+            ],
+            [
+                'type' => 'modal',
+                'label' => __('Soft Delete'),
+                'icon' => 'trash',
+                'url' => $baseurl . '/attributes/delete/%id%',
+                'class' => 'text-warning',
+                'requirement' => 'check_edit_rights'
+            ],
+            [
+                'type' => 'modal',
+                'label' => __('Delete'),
+                'icon' => 'trash',
+                'url' => $baseurl . '/attributes/delete/%id%/true',
+                'class' => 'text-danger',
+                'requirement' => 'check_edit_rights'
+            ]
+        ]
     ]
 ]);
 
@@ -204,69 +237,81 @@ $fields = array_merge($fields, [
  * - item_url                     : Base URL for pagination / filters
  */
 
+$children = [
+    [
+        'type' => 'search',
+        'button' => 'Search',
+        "placeholder" => "Filters aren't implemented for the moment"
+    ]
+];
+
+if (!empty($show_filters)) {
+    $children = array_merge($children, [
+        [
+            'type' => 'button',
+            'label' => __('My attributes'),
+            'icon' => 'user',
+            'class' => 'btn btn-primary',
+            'url' => $baseurl . '/attributes/index/searchemail:' . urlencode($me['email'])
+        ],
+        [
+            'type' => 'button',
+            'label' => __('Org attributes'),
+            'icon' => 'building',
+            'class' => 'btn btn-primary',
+            'url' => $baseurl . '/attributes/index/searchorg:' . urlencode($me['org_id'])
+        ]
+    ]);
+}
+
+$children = array_merge($children, [
+    [
+        'type' => 'more_filters',
+        'label' => __('More filters'),
+        'children' => [
+            [
+                'type' => 'dropdown',
+                'label' => __('Category'),
+                'name' => 'category',
+                'options' => $categoryOptions
+            ],
+            [
+                'type' => 'dropdown',
+                'label' => __('Type'),
+                'name' => 'type',
+                'options' => $typeOptions
+            ],
+            [
+                'type' => 'dropdown',
+                'label' => __('Creator Org'),
+                'name' => 'org',
+                'options' => $orgOptions
+            ],
+            [
+                'type' => 'dropdown',
+                'label' => __('Tags'),
+                'name' => 'tag',
+                'options' => $tagOptions
+            ],
+            [
+                'type' => 'dropdown',
+                'label' => __('Galaxy'),
+                'name' => 'galaxy',
+                'options' => $galaxyOptions
+            ]
+        ]
+    ]
+]);
+
+
 echo $this->element('genericElementsBS5/IndexTable/scaffold', [
     'scaffold_data' => [
         'data' => [
             'data' => $attributes,
+            'primary_id_path' => $path('id'),
             'filter_bar' => [
                 'pull' => 'right',
-                'children' => [
-                    [
-                        'type' => 'search',
-                        'button' => 'Search',
-                        "placeholder" => "Filters aren't implemented for the moment"
-                    ],
-                    [
-                        'type' => 'button',
-                        'label' => __('My attributes'),
-                        'icon' => 'user',
-                        'class' => 'btn btn-primary',
-                        'url' => $baseurl . '/attributes/index/searchemail:' . urlencode($me['email'])
-                    ],
-                    [
-                        'type' => 'button',
-                        'label' => __('Org attributes'),
-                        'icon' => 'building',
-                        'class' => 'btn btn-primary',
-                        'url' => $baseurl . '/attributes/index/searchorg:' . urlencode($me['org_id'])
-                    ],
-                    [
-                        'type' => 'more_filters',
-                        'label' => __('More filters'),
-                        'children' => [
-                            [
-                                'type' => 'dropdown',
-                                'label' => __('Category'),
-                                'name' => 'category',
-                                'options' => $categoryOptions
-                            ],
-                            [
-                                'type' => 'dropdown',
-                                'label' => __('Type'),
-                                'name' => 'type',
-                                'options' => $typeOptions
-                            ],
-                            [
-                                'type' => 'dropdown',
-                                'label' => __('Creator Org'),
-                                'name' => 'org',
-                                'options' => $orgOptions
-                            ],
-                            [
-                                'type' => 'dropdown',
-                                'label' => __('Tags'),
-                                'name' => 'tag',
-                                'options' => $tagOptions
-                            ],
-                            [
-                                'type' => 'dropdown',
-                                'label' => __('Galaxy'),
-                                'name' => 'galaxy',
-                                'options' => $galaxyOptions
-                            ]
-                        ]
-                    ]
-                ],
+                'children' => $children,
                 'delete' => '/delete',
                 'mass_edit' => 1,
                 'mass_tag' => 1,

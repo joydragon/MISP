@@ -370,15 +370,22 @@ class Event extends AppModel
         if (Configure::read('MISP.enableEventBlocklisting') !== false && empty($this->skipBlocklist)) {
             $this->EventBlocklist = ClassRegistry::init('EventBlocklist');
             $orgc = $this->Orgc->find('first', array('conditions' => array('Orgc.id' => $this->data['Event']['orgc_id']), 'recursive' => -1, 'fields' => array('Orgc.name')));
+            
+            // FIX: Scrub 4-byte UTF-8 characters (like emojis) to prevent PDOExceptions 
+            // on database tables using legacy 3-byte utf8 encoding.
+            $eventInfo = $this->data['Event']['info'];
+            if (!empty($eventInfo)) {
+                $eventInfo = preg_replace('/[\x{10000}-\x{10FFFF}]/u', '', $eventInfo);
+            }
+
             $this->EventBlocklist->create();
             $this->EventBlocklist->save(array(
                 'event_uuid' => $this->data['Event']['uuid'],
-                'event_info' => $this->data['Event']['info'],
+                'event_info' => $eventInfo,
                 'event_orgc' => $orgc['Orgc']['name'],
                 'comment' => __('Automatically blocked by deleting event'),
             ));
         }
-
         if (!empty($this->data['Event']['id'])) {
             if ($this->pubToZmq('event')) {
                 $pubSubTool = $this->getPubSubTool();
@@ -5888,14 +5895,6 @@ class Event extends AppModel
     public function publishRouter($id, $passAlong = null, $user)
     {
         if (Configure::read('MISP.background_jobs')) {
-            //Tentatively set the publish flag to 1
-            $event = $this->find('first', array(
-                'conditions' => array('Event.id' => $id),
-                'recursive' => -1
-            ));
-            $event['Event']['published'] = 1;
-            $event['Event']['publish_timestamp'] = time();
-            $this->save($event);
             /** @var Job $job */
             $job = ClassRegistry::init('Job');
             $jobId = $job->createJob($user, Job::WORKER_PRIO, 'publish_event', "Event ID: $id", 'Publishing.');
@@ -6011,6 +6010,14 @@ class Event extends AppModel
                 return $errorMessage;
             }
         }
+        //Tentatively set the publish flag to 1
+        $event_to_publish = $this->find('first', array(
+            'conditions' => array('Event.id' => $id),
+            'recursive' => -1
+        ));
+        $event_to_publish['Event']['published'] = 1;
+        $event_to_publish['Event']['publish_timestamp'] = time();
+        $this->save($event_to_publish);
         if ($jobId) {
             $this->Behaviors->unload('SysLogLogable.SysLogLogable');
         } else {
